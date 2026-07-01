@@ -172,9 +172,9 @@ During the review session, each team member will be asked to explain one part of
 
 | Member      | Ownership                                     |
 |-------------|-----------------------------------------------|
-| Developer A | Part 1 (inverted index) + Part 5 (CLI)        |
-| Developer B | Part 2 (ranked search + heap) + unit tests    |
-| Developer C | Part 3 (category tree) + Part 4 (suggestions) |
+| Nathan      | Part 1 (inverted index) + Part 5 (CLI)        |
+| Sergio      | Part 2 (ranked search + heap) + unit tests    |
+| Mithirsan   | Part 3 (category tree) + Part 4 (suggestions) |
 
 `COMPLEXITY.md` is written collaboratively, every section must be reviewed by all three.
 
