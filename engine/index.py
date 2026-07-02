@@ -1,14 +1,16 @@
-from collections import defaultdict
-
 from engine.tokenize import tokenize
+
 
 class InvertedIndex:
     def __init__(self):
-        self.data = defaultdict(set)
+        self.data = {}
+        self.products_by_id = {}
 
     def build(self, products):
         for product in products:
             product_id = product["id"]
+            self.products_by_id[product_id] = product
+
             texts = [product["name"]] + product.get("tags", [])
             for text in texts:
                 words = tokenize(text)
@@ -18,6 +20,8 @@ class InvertedIndex:
                     self.data[word].add(product_id)
 
     def lookup(self, word):
-        if word in self.data:
-            return self.data[word]
-        return set()
+        ids = self.data.get(word, set())
+        return [self.products_by_id[pid] for pid in ids]
+
+    def get_product(self, product_id):
+        return self.products_by_id.get(product_id)
