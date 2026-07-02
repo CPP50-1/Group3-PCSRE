@@ -6,7 +6,9 @@ with open('catalog.json', 'r', encoding='utf-8') as fichier:
     products = json.load(fichier)
 
 index = InvertedIndex()
-index.build(products)
+result = index.build(products)
 
-print(index.lookup("inkjet"))
+print(result)
+
+
 
