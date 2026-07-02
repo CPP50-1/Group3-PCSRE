@@ -1,17 +1,17 @@
 [
-  {
-    "id": "P00000",
-    "name": "Hdmi Ergonomic Monitor Keyboard",
-    "category": "Electronics/Computers/Peripherals",
-    "tags": [
-      "rechargeable",
-      "usb",
-      "smart"
-    ],
-    "price": 591.95,
-    "stock": 16,
-    "sales_rank": 245
-  },
+    {
+      "id": "P00000",
+      "name": "Hdmi Ergonomic Monitor Keyboard",
+      "category": "Electronics/Computers/Peripherals",
+      "tags": [
+        "rechargeable",
+        "usb",
+        "smart"
+      ],
+      "price": 591.95,
+      "stock": 16,
+      "sales_rank": 245
+    },
   {
     "id": "P00001",
     "name": "Backlit Foldable",

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from utils.tokenizer import tokenize
+from engine.tokenize import tokenize
 
 class InvertedIndex:
     def __init__(self):
