@@ -1,3 +1,12 @@
+from typing import Protocol
+
+
+class VocabularyProvider(Protocol):
+    def getVocabulary(self) -> set[str]:
+        """ """
+        ...
+
+
 def levenshteinEditDistance(a: str, b: str) -> int:
     """
     Compute de distance between the given 2 strings using Levenshtein Edit Distance
