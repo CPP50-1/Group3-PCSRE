@@ -23,15 +23,48 @@ CATEGORIES = [
 ]
 
 WORDS = [
-    "wireless", "ergonomic", "compact", "portable", "mechanical",
-    "bluetooth", "usb", "hdmi", "rechargeable", "adjustable",
-    "gaming", "professional", "silent", "backlit", "foldable",
-    "keyboard", "mouse", "monitor", "headset", "webcam",
-    "chair", "desk", "lamp", "cable", "adapter",
-    "router", "switch", "hub", "drive", "printer",
-    "laser", "inkjet", "optical", "digital", "smart",
-    "pro", "lite", "plus", "max", "ultra",
+    "wireless",
+    "ergonomic",
+    "compact",
+    "portable",
+    "mechanical",
+    "bluetooth",
+    "usb",
+    "hdmi",
+    "rechargeable",
+    "adjustable",
+    "gaming",
+    "professional",
+    "silent",
+    "backlit",
+    "foldable",
+    "keyboard",
+    "mouse",
+    "monitor",
+    "headset",
+    "webcam",
+    "chair",
+    "desk",
+    "lamp",
+    "cable",
+    "adapter",
+    "router",
+    "switch",
+    "hub",
+    "drive",
+    "printer",
+    "laser",
+    "inkjet",
+    "optical",
+    "digital",
+    "smart",
+    "pro",
+    "lite",
+    "plus",
+    "max",
+    "ultra",
 ]
+
 
 def make_product(i: int) -> dict:
     n_words = random.randint(2, 4)
@@ -47,6 +80,7 @@ def make_product(i: int) -> dict:
         "stock": random.randint(0, 500),
         "sales_rank": random.randint(1, 5000),
     }
+
 
 catalog = [make_product(i) for i in range(5000)]
 with open("catalog.json", "w") as f:

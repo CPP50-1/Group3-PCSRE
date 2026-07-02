@@ -5,6 +5,7 @@ MIN_TOKEN_LENGTH = 3
 
 
 def tokenize(text: str) -> list[str]:
+    """Convert a text into a list of normalized tokens."""
     if not text:
         return []
     raw_tokens = _TOKEN_PATTERN.findall(text)

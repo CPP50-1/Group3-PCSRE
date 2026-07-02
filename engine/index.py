@@ -6,6 +6,7 @@ class InvertedIndex:
         self.data = {}
 
     def build(self, products):
+        """Build inverted index from a list of products."""
         for product in products:
             product_id = product["id"]
             texts = [product["name"]] + product.get("tags", [])
@@ -18,4 +19,5 @@ class InvertedIndex:
         return self.data
 
     def get_index(self):
+        """Return the inverted index."""
         return self.data
