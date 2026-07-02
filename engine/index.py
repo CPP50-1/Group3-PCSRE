@@ -22,6 +22,3 @@ class InvertedIndex:
     def lookup(self, word):
         ids = self.data.get(word, set())
         return [self.products_by_id[pid] for pid in ids]
-
-    def get_product(self, product_id):
-        return self.products_by_id.get(product_id)
