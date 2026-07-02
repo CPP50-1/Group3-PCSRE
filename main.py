@@ -8,6 +8,5 @@ with open('catalog.json', 'r', encoding='utf-8') as fichier:
 index = InvertedIndex()
 index.build(products)
 
-print(index.lookup("bluetooth"))
-print(index.lookup("usb"))
+print(index.lookup("inkjet"))
 
