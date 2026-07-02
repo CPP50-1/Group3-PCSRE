@@ -2,9 +2,12 @@ from typing import Protocol
 
 
 class VocabularyProvider(Protocol):
+    """
+    Protocol taht provides available words for suggestion matching
+    """
+
     def getVocabulary(self) -> set[str]:
-        """ """
-        ...
+        raise NotImplementedError
 
 
 def levenshteinEditDistance(a: str, b: str) -> int:
