@@ -45,23 +45,21 @@ def search(query: str, top_k: int = 10):
     data_values = [inverted_index.data.get(k) for k in query_tokens]
 
     freq = Counter()                                #Dictionary containing product_id and the hits per token
-
     for val in data_values: freq.update(val)
-
-    selected_products = []                          #Use of a min_heap to store the top_k items
+    selected_products = []                          #Use of a min_heap to store the top_k items.
+                                                    # This is a list of paired values (score, Product) of length top_k
     heapq.heapify(selected_products)
 
     for counted_item in freq:
         prod = get_product_by_id(counted_item)
         if prod:
             score = get_score(freq[counted_item], len(query_tokens), prod)
-            if len(selected_products) < top_k: heapq.heappush(selected_products, [score, prod])     #!!!! find how to compare on push
+            if len(selected_products) < top_k: heapq.heappush(selected_products, [score, prod])
             elif score > selected_products[0][0]: heapq.heapreplace(selected_products, [score, prod])
-
-
     return selected_products
 
 
 def get_score(matched_tokens, total_query_tokens, product:Product) -> float:
-    score = (matched_tokens / total_query_tokens) * 0.5 + (product.stock > 0) * 0.2 + (1 / log(product.sales_rank + 2,2)) * 0.3
+    score = ((matched_tokens / total_query_tokens) * 0.5 + (product.stock > 0) * 0.2
+             + (1 / log(product.sales_rank + 2,2)) * 0.3)
     return score
