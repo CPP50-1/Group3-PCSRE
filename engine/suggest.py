@@ -43,6 +43,32 @@ def _levenshteinEditDistance(a: str, b: str) -> int:
     return distanceMatrix[lenA][lenB]
 
 
+def _hammingDistance(a: str, b: str, earlyOut: int = 0) -> int:
+    """
+    Compute de distance between the given 2 strings using Hamming Distance. Case insensitive
+    string to compare should be the same lenght. it uses only substitution to compute distances
+    """
+    lenA, lenB = len(a), len(b)
+
+    useEalyOut: bool = earlyOut > 0
+
+    if lenA != lenB:
+        raise ValueError(f"{a} and {b} does not have the same lenght")
+
+    a = a.lower()
+    b = b.lower()
+
+    distance: int = 0
+
+    for index in range(lenA):
+        if a[index] != b[index]:
+            distance += 1
+            if useEalyOut and distance > earlyOut:
+                return distance
+
+    return distance
+
+
 class SuggestionEngine:
     """
     Suggestion engine providing method to find a matching word
@@ -77,7 +103,11 @@ class SuggestionEngine:
             if abs(word_len - input_len) > self._discardDistance:
                 continue
 
-            dist: int = _levenshteinEditDistance(input, word)
+            dist: int = (
+                _hammingDistance(input, word, self._discardDistance)
+                if word_len == input_len
+                else _levenshteinEditDistance(input, word)
+            )
 
             if dist <= self._discardDistance and (dist, word) not in suggestion:
                 suggestion.append((dist, word))
