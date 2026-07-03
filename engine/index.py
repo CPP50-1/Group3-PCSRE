@@ -21,3 +21,6 @@ class InvertedIndex:
     def get_index(self):
         """Return the inverted index."""
         return self.data
+
+    def getVocabulary(self) -> set[str]:
+        return set(self.data.keys())
