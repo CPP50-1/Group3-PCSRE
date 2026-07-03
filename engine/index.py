@@ -23,4 +23,4 @@ class InvertedIndex:
         return self.data
 
     def getVocabulary(self) -> set[str]:
-        return self.data.keys()
+        return set(self.data.keys())
