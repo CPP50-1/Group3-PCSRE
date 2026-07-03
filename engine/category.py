@@ -11,7 +11,7 @@ class CategoryNode:
         name: str,
         children: dict[str, CategoryNode] | None = None,
         product_ids: set[str] | None = None,
-    ):
+    ) -> None:
         self.name = name
 
         if children is not None:
@@ -20,25 +20,33 @@ class CategoryNode:
             self.children = dict()
 
         if product_ids is not None:
-            self.product_ids = product_ids
+            self.productIds = product_ids
         else:
-            self.product_ids = set()
+            self.productIds = set()
+
+    def __eq__(self, other: CategoryNode) -> bool:
+        if not isinstance(other, CategoryNode):
+            return False
+        return self.name == other.name
+
+    def __hash__(self) -> int:
+        return hash(self.name)
 
     @property
     def name(self) -> str:
-        return self._name
+        return self.__name
 
     @name.setter
     def name(self, name: str) -> None:
-        self._name = name
+        self.__name = name
 
     @property
     def children(self) -> dict[str, CategoryNode]:
-        return self._children
+        return self.__children
 
     @children.setter
     def children(self, children: dict[str, CategoryNode]) -> None:
-        self._children = children
+        self.__children = children
 
     def addChild(self, node: CategoryNode) -> None:
         """
@@ -50,18 +58,18 @@ class CategoryNode:
         self.children[node.name] = node
 
     @property
-    def product_ids(self) -> set[str]:
-        return self._product_ids
+    def productIds(self) -> set[str]:
+        return self.__productIds
 
-    @product_ids.setter
-    def product_ids(self, product_ids: set[str]) -> None:
-        self._product_ids = product_ids
+    @productIds.setter
+    def productIds(self, productIds: set[str]) -> None:
+        self.__productIds = productIds
 
     def addProductId(self, id: str) -> None:
         """
         Add specified product id into product id set
         """
-        self.product_ids.add(id)
+        self.productIds.add(id)
 
 
 class CategoryTree:
@@ -132,7 +140,7 @@ class CategoryTree:
             if current_node in visited:
                 continue
 
-            prodcuts_id.update(current_node.product_ids)
+            prodcuts_id.update(current_node.productIds)
 
             visited.add(current_node)
 
@@ -140,24 +148,3 @@ class CategoryTree:
                 node_stack.append(child_node)
 
         return prodcuts_id
-
-
-class CategorySearch:
-    """ """
-
-    def __init__(self, category_tree: CategoryTree):
-        self._category_tree = category_tree
-
-    def search_in_category(
-        self,
-        query: str,
-        category_path: str,
-        top_k: int = 10,
-    ) -> list[str]:
-        """
-        Restrict result to product whose category starts with the given path.
-        """
-        raise NotImplementedError
-
-        # TODO: implementaton of he querry
-        productIds = self._category_tree.collect_product_ids(category_path)
