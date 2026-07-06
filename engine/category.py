@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine.types import Product
+
 
 class CategoryNode:
     """
@@ -80,20 +85,12 @@ class CategoryTree:
     def __init__(self) -> None:
         self._root = CategoryNode("root")
 
-    def build(self, products: list[dict]) -> None:
+    def build(self, products: list[Product]) -> None:
         """
         Build the tree from the catalog
         """
         for product in products:
-            product_id: str = product.get("id")
-            if product_id is None:
-                raise ValueError(f"product: {product} doesn't have an id")
-
-            path: str = product.get("category")
-            if path is None:
-                raise ValueError(f"product: {product} doesn't have a category")
-
-            categories: list[str] = path.split("/")
+            categories: list[str] = product.category.split("/")
 
             current_node: CategoryNode = self._root
 
@@ -103,7 +100,7 @@ class CategoryTree:
 
                 current_node = current_node.children[category]
 
-            current_node.addProductId(product_id)
+            current_node.addProductId(product.id)
 
     def _find_node(self, category_path: str) -> CategoryNode | None:
         """

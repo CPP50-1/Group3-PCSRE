@@ -1,44 +1,12 @@
 from __future__ import annotations
 
+import json
 from abc import ABC
 
-
-class Product:
-    """
-    Class repesenting a Product
-    """
-
-    def __init__(
-        self,
-        id,
-        name,
-        category,
-        tags: list[str],
-        price: float,
-        stock: int,
-        sales_rank: int,
-    ):
-        self._id = id
-        self._name = name
-        self._category = category
-        self._tags = tags
-        self._price = price
-        self._stock = stock
-        self._sales_rank = sales_rank
-
-    def __eq__(self, other: Product) -> bool:
-        if not isinstance(other, Product):
-            return False
-        return self._id == other._id
-
-    def __hash__(self) -> int:
-        return hash(self._id)
-
-    def __str__(self) -> str:
-        return f"{self._id}: {self._name} {self._price} [{self._stock}] ({self._category}) [{self._tags}] ({self._sales_rank})"
+from engine.types import Product
 
 
-class ProductRepository(ABC):
+class ProductCatalog(ABC):
     """
     Data handler repository to manage product datas
     """
@@ -73,3 +41,31 @@ class ProductRepository(ABC):
     def clear(self) -> None:
         """Helper method to allow subclasses or users to clear the repo"""
         self.__products.clear()
+
+    def getValues(self) -> list[Product]:
+        return self.__products.values()
+
+
+class JSONProductCatalog(ProductCatalog):
+    """
+    Concrete repo managing product data loaded from a json file
+    """
+
+    def __init__(self, pathTofile: str) -> None:
+        super().__init__()
+
+        with open(pathTofile, encoding="utf-8") as fichier:
+            products = json.load(fichier)
+
+        for product in products:
+            product_id = product.get("id")
+
+            self[product_id] = Product(
+                product_id,
+                product["name"],
+                product["category"],
+                product["tags"],
+                product["price"],
+                product["stock"],
+                product["sales_rank"],
+            )
