@@ -41,6 +41,8 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
                 distanceMatrix[i - 1][j - 1] + cost,  # substitution
             )
 
+        # if the min of the row is already higher, we can stop here. the number will not go down anywhere
+        # later
         if useMaxEdit:
             minEditionInRow = min(distanceMatrix[i])
 
