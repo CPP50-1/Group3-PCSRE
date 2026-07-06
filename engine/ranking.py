@@ -18,7 +18,10 @@ class Product:
         self.sales_rank = sales_rank
 
     def __str__(self):
-        return f"name:{self.name}; category:{self.category}"
+        return f"name:{self.name}; category:{self.category}; tag: {self.tags}"
+
+    def __lt__(self, other):
+        return self.product_id < other.product_id
 
 
 def get_all_products():
@@ -63,3 +66,5 @@ def search(query: str, top_k: int = 10):
 def get_score(matched_tokens, total_query_tokens, product: Product) -> float:
     return ((matched_tokens / total_query_tokens) * 0.5 + (product.stock > 0) * 0.2
              + (1 / log(product.sales_rank + 2, 2)) * 0.3)
+
+
