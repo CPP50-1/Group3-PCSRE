@@ -65,7 +65,9 @@ class CatalogSearchRankingEngine:
 
         for productId in data_values:
             score = getScore(
-                data_values[productId], queryTokenLen, self._catalog[productId]
+                data_values[productId],
+                queryTokenLen,
+                self._catalog[productId],
             )
 
             if len(selected_products) < top_k:
