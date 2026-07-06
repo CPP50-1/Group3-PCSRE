@@ -32,8 +32,13 @@ class Product:
     def __hash__(self) -> int:
         return hash(self.id)
 
-    def __str__(self) -> str:
-        return f"{self.id}: {self.name} {self.price} [{self.stock}] ({self.category}) [{self.tags}] ({self.sales_rank})"
+    def __str__(self):
+        return (
+            f"[{self.id}] {self.name}\n"
+            f"{self.category}\n"
+            f"\u20ac{self.price:.2f}  |  {self.stock} in stock  |  Rank #{self.sales_rank}"
+            f" \n"
+        )
 
     def __lt__(self, other):
         return self.product_id < other.product_id
