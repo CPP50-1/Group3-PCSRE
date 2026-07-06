@@ -1,16 +1,8 @@
 import argparse
 
-from engine.data_manager import JSONProductCatalog
-from engine.index import InvertedIndex
 from engine.ranking import CatalogSearchRankingEngine
 from engine.suggest import SuggestionEngine
 from engine.tokenize import tokenize
-
-
-def load_catalog(path):
-    """Load the catalog from the json file and convert to Product objects."""
-    catalog = JSONProductCatalog(path)
-    return list(catalog.getValues())
 
 
 def main():
@@ -32,10 +24,10 @@ def main():
 
     # Load and build all what we need
     print("Loading catalog...", end=" ")
-    products = load_catalog("catalog.json")
-    index = InvertedIndex()
-    index.build(products)
     engine = CatalogSearchRankingEngine()
+    index = engine._invertedIndex
+    products = engine._catalog
+
     suggestion_engine = SuggestionEngine(vocabularyProvider=index)
     print(f"{len(products)} products indexed. \n")
 
