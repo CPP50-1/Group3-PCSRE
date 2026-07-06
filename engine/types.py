@@ -35,6 +35,9 @@ class Product:
     def __str__(self) -> str:
         return f"{self.id}: {self.name} {self.price} [{self.stock}] ({self.category}) [{self.tags}] ({self.sales_rank})"
 
+    def __lt__(self, other):
+        return self.product_id < other.product_id
+
     @property
     def id(self) -> str:
         return self.__id

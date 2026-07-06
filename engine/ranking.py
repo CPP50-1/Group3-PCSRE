@@ -1,70 +1,78 @@
 import heapq
-import json
 from collections import Counter
-from math import log
+from math import log2
 
+from engine.category import CategoryTree
+from engine.data_manager import JSONProductCatalog, ProductCatalog
 from engine.index import InvertedIndex
 from engine.tokenize import tokenize
+from engine.types import Product
 
 
-class Product:
-    def __init__(self, product_id, name, category, tags: list[str], price: float, stock: int, sales_rank: int):
-        self.product_id = product_id
-        self.name = name
-        self.category = category
-        self.tags = tags
-        self.price = price
-        self.stock = stock
-        self.sales_rank = sales_rank
-
-    def __str__(self):
-        return f"name:{self.name}; category:{self.category}; tag: {self.tags}"
-
-    def __lt__(self, other):
-        return self.product_id < other.product_id
+def getScore(matched_tokens, total_query_tokens, product: Product) -> float:
+    """
+    Helper function to calculate score for each candidate
+    """
+    return (
+        (matched_tokens / total_query_tokens) * 0.5
+        + (product.stock > 0) * 0.2
+        + (1 / log2(product.sales_rank + 2)) * 0.3
+    )
 
 
-def get_all_products():
-    with open("../catalog.json", encoding="utf-8") as f:
-        return json.load(f)
+class CatalogSearchRankingEngine:
+    """
+    Facade class to handle indexing, category tree and catalog data management
+    """
 
+    def __init__(self):
+        self._catalog: ProductCatalog = JSONProductCatalog("catalog.json")
 
-all_products = get_all_products()
+        self._invertedIndex = InvertedIndex()
+        self._invertedIndex.build(self._catalog.getValues())
 
+        self._categoryTree = CategoryTree()
+        self._categoryTree.build(self._catalog.getValues())
 
-def get_product_by_id(prd_id: str):
-    res = next((x for x in all_products if x["id"] == prd_id), None)
-    if res:
-        return Product(res["id"], res["name"], res["category"], res["tags"], res["price"], res["stock"], res["sales_rank"])
+    def search_in_category(
+        self,
+        query: str,
+        category: str,
+        top_k: int = 10,
+    ) -> list[Product]:
+        """ """
+        categoryFilteredProductIds = self._categoryTree.collect_product_ids(category)
 
-    return None
+        return self.search(query, top_k, categoryFilteredProductIds)
 
+    def search(self, query: str, top_k: int = 10, filtered_ids: set[str] | None = None):
+        queryTokens = set(tokenize(query))
+        queryTokenLen = len(queryTokens)
 
-def search(query: str, top_k: int = 10):
-    query_tokens = set(tokenize(query))             # Ensure there is only one token of every sort
-    inverted_index = InvertedIndex()                # Ensure there is only one token of every sorta list of product_id
-    inverted_index.build(all_products)
-    data_values = [inverted_index.data.get(k) for k in query_tokens]
+        # Dictionary containing product_id and the hits per token
+        data_values: Counter = Counter()
+        for val in [self._invertedIndex.get_index().get(key) for key in queryTokens]:
+            asSet = set(val)
 
-    freq = Counter()                                # Dictionary containing product_id and the hits per token
-    for val in data_values:
-        freq.update(val)
-    selected_products = []                          # Use of a min_heap to store the top_k items. This is a list of paired values (score, Product) of length top_k  # noqa: E116
-    heapq.heapify(selected_products)
+            if filtered_ids is not None:
+                asSet = asSet.union(filtered_ids)
 
-    for counted_item in freq:
-        prod = get_product_by_id(counted_item)
-        if prod:
-            score = get_score(freq[counted_item], len(query_tokens), prod)
+            data_values.update(asSet)
+
+        selected_products = []  # Use of a min_heap to store the top_k items.
+
+        heapq.heapify(selected_products)
+
+        for productId in data_values:
+            score = getScore(
+                data_values[productId], queryTokenLen, self._catalog[productId]
+            )
+
             if len(selected_products) < top_k:
-                heapq.heappush(selected_products, [score, prod])  # noqa: E701
+                heapq.heappush(selected_products, [score, productId])
             elif score > selected_products[0][0]:
-                heapq.heapreplace(selected_products, [score, prod])  # noqa: E701
-    return selected_products
+                heapq.heapreplace(selected_products, [score, productId])
 
+        selected_products.sort(reverse=True)
 
-def get_score(matched_tokens, total_query_tokens, product: Product) -> float:
-    return ((matched_tokens / total_query_tokens) * 0.5 + (product.stock > 0) * 0.2
-             + (1 / log(product.sales_rank + 2, 2)) * 0.3)
-
-
+        return [self._catalog[index] for _, index in selected_products]
