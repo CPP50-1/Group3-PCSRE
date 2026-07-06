@@ -12,11 +12,12 @@ class VocabularyProvider(Protocol):
         raise NotImplementedError
 
 
-def _levenshteinEditDistance(a: str, b: str) -> int:
+def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
     """
     Compute de distance between the given 2 strings using Levenshtein Edit Distance. Case insensitive
     """
     lenA, lenB = len(a), len(b)
+    useMaxEdit: bool = maxEdit > 0
     distanceMatrix: list[list[int]] = [[0] * (lenB + 1) for _ in range(lenA + 1)]
 
     a = a.lower()
@@ -40,17 +41,23 @@ def _levenshteinEditDistance(a: str, b: str) -> int:
                 distanceMatrix[i - 1][j - 1] + cost,  # substitution
             )
 
+        if useMaxEdit:
+            minEditionInRow = min(distanceMatrix[i])
+
+            if minEditionInRow > maxEdit:
+                return minEditionInRow
+
     return distanceMatrix[lenA][lenB]
 
 
-def _hammingDistance(a: str, b: str, earlyOut: int = 0) -> int:
+def _hammingDistance(a: str, b: str, maxEdit: int = 0) -> int:
     """
     Compute de distance between the given 2 strings using Hamming Distance. Case insensitive
     string to compare should be the same lenght. it uses only substitution to compute distances
     """
     lenA, lenB = len(a), len(b)
 
-    useEalyOut: bool = earlyOut > 0
+    useMaxEdit: bool = maxEdit > 0
 
     if lenA != lenB:
         raise ValueError(f"{a} and {b} does not have the same lenght")
@@ -63,7 +70,7 @@ def _hammingDistance(a: str, b: str, earlyOut: int = 0) -> int:
     for index in range(lenA):
         if a[index] != b[index]:
             distance += 1
-            if useEalyOut and distance > earlyOut:
+            if useMaxEdit and distance > maxEdit:
                 return distance
 
     return distance
@@ -96,17 +103,19 @@ class SuggestionEngine:
         input_len = len(input)
 
         for word in vocabulary:
-            # because we discrd every suggestion if the disance is higher than 2, we can skip words that would lead to
-            # an higher difference in lenght compared to the input. Levenshtein Edit Distance is costly in process so
-            # we have an opportunity to save computation time here.
+            # Because we discard every suggestion if the disance is higher than what we setted, we can skip words that
+            # would lead to an higher difference in lenght compared to the input. Levenshtein Edit Distance is costly
+            # in process so we have an opportunity to save computation time here.
             word_len = len(word)
             if abs(word_len - input_len) > self._discardDistance:
                 continue
 
+            # If word and input are the same lenght, we can use Hamming Distance wich is lighter than levenshtein.
+            # We don't need deletion and insertion if the strings are the same size
             dist: int = (
                 _hammingDistance(input, word, self._discardDistance)
                 if word_len == input_len
-                else _levenshteinEditDistance(input, word)
+                else _levenshteinEditDistance(input, word, self._discardDistance)
             )
 
             if dist <= self._discardDistance and (dist, word) not in suggestion:
