@@ -25,7 +25,7 @@ def main():
     # Load and build all what we need
     print("Loading catalog...", end=" ")
     engine = CatalogSearchRankingEngine()
-    index = engine._invertedIndex
+    index = engine._inverted_index
     products = engine._catalog
 
     suggestion_engine = SuggestionEngine(vocabularyProvider=index)
