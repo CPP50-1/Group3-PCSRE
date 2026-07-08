@@ -95,10 +95,11 @@ class CategoryTree:
             current_node: CategoryNode = self._root
 
             for category in categories:
-                if category not in current_node.children:
-                    current_node.addChild(CategoryNode(category))
-
-                current_node = current_node.children[category]
+                node: CategoryNode = current_node.children.get(category)
+                if node is None:
+                    node = CategoryNode(category)
+                    current_node.children[category] = node
+                current_node = node
 
             current_node.addProductId(product.id)
 
@@ -109,10 +110,10 @@ class CategoryTree:
         current_node = self._root
 
         for category in category_path.split("/"):
-            if category not in current_node.children:
+            node: CategoryNode = current_node.children.get(category)
+            if node is None:
                 return None
-
-            current_node = current_node.children[category]
+            current_node = node
 
         return current_node
 
