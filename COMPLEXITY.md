@@ -147,11 +147,5 @@ Total cost: 3 products × ~3 text fields each × O(L) tokenization + O(1)
 amortized insertions per token — a single linear pass over the catalog,
 performed once at startup.
 
-**Step 5: A query for `"keyboard"` arrives.**
 
-`get_index().get("keyboard")` performs one hash-table lookup into
-`self.__data`, returning `{"P1", "P3"}` directly — no iteration over the
-other 6 vocabulary entries (`"wireless"`, `"bluetooth"`, `"usb"`, `"mouse"`,
-`"wired"`, `"cover"`, `"silicone"`) and no re-inspection of P2, whose
-`name` and `tags` never mention "keyboard".
 
