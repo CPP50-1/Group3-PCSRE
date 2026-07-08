@@ -55,7 +55,7 @@ class CatalogSearchRankingEngine:
             asSet = set(val)
 
             if filtered_ids is not None:
-                asSet = asSet.union(filtered_ids)
+                asSet = asSet.intersection(filtered_ids)
 
             data_values.update(asSet)
 
