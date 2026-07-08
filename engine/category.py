@@ -25,9 +25,9 @@ class CategoryNode:
             self.children = dict()
 
         if product_ids is not None:
-            self.productIds = product_ids
+            self.product_ids = product_ids
         else:
-            self.productIds = set()
+            self.product_ids = set()
 
     def __eq__(self, other: CategoryNode) -> bool:
         if not isinstance(other, CategoryNode):
@@ -53,28 +53,28 @@ class CategoryNode:
     def children(self, children: dict[str, CategoryNode]) -> None:
         self.__children = children
 
-    def addChild(self, node: CategoryNode) -> None:
+    def add_child(self, node: CategoryNode) -> None:
         """
         Add given child node as to the children node
 
-        Propterty:
+        Property:
             node: CategoryNode child category node to be added
         """
         self.children[node.name] = node
 
     @property
-    def productIds(self) -> set[str]:
-        return self.__productIds
+    def product_ids(self) -> set[str]:
+        return self.__product_ids
 
-    @productIds.setter
-    def productIds(self, productIds: set[str]) -> None:
-        self.__productIds = productIds
+    @product_ids.setter
+    def product_ids(self, product_ids: set[str]) -> None:
+        self.__product_ids = product_ids
 
-    def addProductId(self, id: str) -> None:
+    def add_product_id(self, id: str) -> None:
         """
         Add specified product id into product id set
         """
-        self.productIds.add(id)
+        self.product_ids.add(id)
 
 
 class CategoryTree:
@@ -101,7 +101,7 @@ class CategoryTree:
                     current_node.children[category] = node
                 current_node = node
 
-            current_node.addProductId(product.id)
+            current_node.add_product_id(product.id)
 
     def _find_node(self, category_path: str) -> CategoryNode | None:
         """
@@ -119,23 +119,23 @@ class CategoryTree:
 
     def collect_product_ids(self, category_path: str) -> set[str]:
         """
-        Collect all product from the given category path (ex: "Electronics/Computers/Peripherals") and its sub-caregories
+        Collect all product from the given category path (ex: "Electronics/Computers/Peripherals") and its sub-categories
         """
         node = self._find_node(category_path)
 
         if node is None:
             return set()
 
-        prodcuts_id: set[str] = set()
+        prodcuts_ids: set[str] = set()
 
         node_stack: list[CategoryNode] = [node]
 
         while node_stack:
             current_node = node_stack.pop()
 
-            prodcuts_id.update(current_node.productIds)
+            prodcuts_ids.update(current_node.product_ids)
 
             for child_node in current_node.children.values():
                 node_stack.append(child_node)
 
-        return prodcuts_id
+        return prodcuts_ids
