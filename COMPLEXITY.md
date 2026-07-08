@@ -294,9 +294,7 @@ Both functions accept a `maxEdit` parameter. If the computed distance exceeds th
 
 The `SuggestionEngine` does not know the origin of the vocabulary. It accepts any object implementing the `VocabularyProvider` protocol, which requires a single method: `getVocabulary() -> set[str]`. The `InvertedIndex` happens to provide this method, but the vocabulary source could be swapped (a dictionary file, a database, etc.) without modifying the suggestion logic. This design choice decouples the suggestion engine from the rest of the system.
 
-#### Three optimizations in `suggest()`
-
-The `suggest()` method employs three performance optimizations:
+#### Six optimizations in SuggestEngine
 
 **1. Length-based discard filter.**
 
@@ -318,11 +316,21 @@ for index in range(len(a)):
 
 In contrast, Levenshtein allocates a 2D matrix of size `(lenA+1) × (lenB+1)` and fills every cell. For 8-character strings, this is a 9 × 9 = 81-cell table, with each cell computing a minimum of three values. Hamming performs just 8 character comparisons.
 
-**3. Early exits in Levenshtein.**
+**3. Trimming in Levenshtein.**
 
-The implementation adds an additional optimization: after computing each row of the Levenshtein matrix, if `maxEdit > min(values_in_row)`, the smallest value in that row is checked. If even the smallest value exceeds `maxEdit`, the final distance cannot be within the threshold (the minimum value in each row is non-decreasing), so the algorithm returns immediately. This avoids computing the remainder of the matrix for words that are clearly too distant.
+Before any distance computation in Levenshtein, the algorithm strips away matching characters from both ends of the two strings. This reduces the effective length that reaches the matrix loop. It also provides an immediate return if `lenA - lenB > maxEdit` (pure-length early-out).
 
-For example, comparing `"keyborad"` with `"zzzzzzzz"` (eight z's) with `maxEdit = 2`: by row 3 or 4, the minimum value in each row exceeds 2, and the algorithm terminates early instead of computing all 81 cells.
+**4. Two-row sliding over full matrix.**
+
+Still in Levenshtein, instead of populating and computing the entire matrix. The previous row is kept in memory while we process the current row. This reduces the space complexity drastically from `(len(word1) + 1) * (len(word2) + 1)` to `2 * (len(word2) +1)` (if word2 is shorter than word1)
+
+**5. Use of Band.**
+
+Also in Levenshtein, in each row, only columns where `|i - j| <= maxEdit` are computed, not the entire width. Narrower band reduces computation for cases that would go over `maxEdit` and would have been discarded anyway.
+
+**6. Mini-heap.**
+
+Utilizing heapq to maintain only the top-k candidates. This reduces memory and the final sort is over at most k elements. This is way more efficient than accumulating all (distance, word) tuples in a list.
 
 ### 2. Complexity
 
@@ -336,18 +344,22 @@ Thus, the total build cost for the suggestion feature is zero: it reuses work al
 
 #### Query-time Complexity
 
-Worst case: **O(V × L² + V log V)** where:
+Worst case: **O(V × B × L + V log K)** where:
 
 - **V** = vocabulary size
-- **L** = length of the input word
+- **B** = `(2*maxEdit) + 1` (band width)
+- **L** = length of the reduced word after trimming
+- **K** = maximum number of suggestion
 
-The V × L² term arises from the Levenshtein matrix: for each of V words, a matrix of size (L+1) × (L+1) may need to be computed, costing O(L²). The V log V term accounts for sorting the results at the end.
-
-In practice, the actual runtime is substantially lower due to the three optimizations explained earlier.
+In practice, the actual runtime is substantially lower due to the six optimizations explained earlier.
 
 #### Space complexity at query time
 
-The Levenshtein matrix constitutes the only significant allocation: O(L²) integers. For L = 8, this amounts to 81 integers — negligible. The result list and suggestion tuples are also small (at most V entries). No persistent memory is retained between queries.
+Worst case: **O(2 * min(L1, L2) + 1) = O(L)**
+
+- **L** = the shorter word length
+
+The Levenshtein matrix constitutes the only significant allocation but we optimized it using a two-row sliding approach. Making it O(L) integers instead of O(L²).
 
 ### 3. Concrete Scenario Analysis
 
