@@ -93,23 +93,26 @@ class SuggestionEngine:
     def __init__(
         self,
         vocabularyProvider: VocabularyProvider,
-        discrdDistance=2,
+        discardDistance=2,
     ) -> None:
         self._vocabularyProvider = vocabularyProvider
-        self._discardDistance = discrdDistance
+        self._discardDistance = discardDistance
 
     def suggest(
         self,
         input: str,
-        max_suggestions: int = 3,
+        maxSuggestions: int = 3,
     ) -> list[str]:
         """
         Return the closest matching words in vocabulary
         """
+        input_len = len(input)
+
+        if maxSuggestions <= 0 or input_len <= 0:
+            return []
 
         vocabulary = self._vocabularyProvider.getVocabulary()
         suggestion: list[tuple[int, str]] = []
-        input_len = len(input)
 
         for word in vocabulary:
             # Because we discard every suggestion if the disance is higher than what we setted, we can skip words that
@@ -127,7 +130,7 @@ class SuggestionEngine:
                 else _levenshteinEditDistance(input, word, self._discardDistance)
             )
 
-            if dist <= self._discardDistance and (dist, word) not in suggestion:
+            if dist <= self._discardDistance:
                 suggestion.append((dist, word))
 
         suggestion.sort(key=lambda x: (x[0], x[1]))
@@ -135,12 +138,9 @@ class SuggestionEngine:
         result: list[str] = []
 
         for _, word in suggestion:
-            if word in result:
-                continue
-
             result.append(word)
 
-            if len(result) == max_suggestions:
+            if len(result) == maxSuggestions:
                 break
 
         return result
