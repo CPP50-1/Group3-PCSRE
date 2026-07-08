@@ -40,9 +40,6 @@ class Product:
             f" \n"
         )
 
-    def __lt__(self, other):
-        return self.product_id < other.product_id
-
     @property
     def id(self) -> str:
         return self.__id
