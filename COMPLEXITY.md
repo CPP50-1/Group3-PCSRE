@@ -20,6 +20,70 @@ This structure is exposed through two methods with distinct roles:
   union (`|`) instead of manually deduplicating IDs across tokens. If no
   product matches, `lookup` returns an empty set, never raises an error.
   
+## Part 2: Ranked search
+### 1. Data structures
+
+We use a set of query tokens to ensure we only use unique query tokens.
+  queryTokens = set(tokenize(query))
+
+USE
+  * This will provide very fast membership testing (O(1) average case), and prevent repeated words in a query from unfairly increasing a product's score.
+
+A Counter structure is used to count how many query terms match each product.
+USE
+  * Efficiently counts occurrences without manually checking whether keys already exist.
+  * The count is later used to compute each product's relevance score.
+The 'Inverted index' and the 'Catalog' both use a dictionary to store and retrieve indexed data efficiently.
+USE
+  * Provides average O(1) lookup time.
+  * Makes retrieving products and token matches very efficient during a search. 
+
+To keep only the top k highest-scoring products we use a min_heap structure managed by the heapify library in heap module
+Each element is stored as: [score, product]
+
+As products are scored:
+
+  * If fewer than top_k products have been found, they are added.
+  * Once the heap reaches top_k, only products with a higher score than the current minimum replace an existing entry.
+
+USE
+
+  * Avoids sorting every matching product.
+  * Maintains only the best k products during the search.
+  * More efficient than sorting all results when the number of matching products is large.
+
+The structures above-mentioned allow us to both quickly and efficiently find and score products and return only the highest scored results.
+
+### 2. Complexity
+#### Time: overall
+
+All in all (combining all the stages) we can observe a complexity of  O(q + m + (n log k)) where:
+  * q = number of unique query tokens
+  * m = total number of product matches returned by the inverted index (across all query tokens)
+  * n = number of unique candidate products (len(data_values))
+  * k = top_k
+
+This is because usually k is usually much smaller than k
+
+#### Time: Worst-case complexity
+In the worst case, every query token matches every product.
+
+If N is the total number of products, then:
+  * m=qN
+  * n=N
+
+The complexity becomes: O(qN +N log k). Since qN dominates it becomes O(qN).
+
+#### Space: overall
+
+The search method allocates:
+
+Query token set: O(q)
+Counter for candidate products: O(n)
+Heap of top results: O(k)
+
+Overall: O(q+n+k) or simply O(n) since k and q are generally much smaller than the number of candidate products.
+
 ## Part 3: Category Tree Filter
 
 ### 1. Data Structure
