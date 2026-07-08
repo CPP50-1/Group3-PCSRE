@@ -165,7 +165,7 @@ The tree shifts that cost to build time and makes each query O(P_sub), where P_s
 If children were stored as a list, walking from one path segment to the next would require iterating through the list until a matching name is found. This operation would be O(N), where N is the number of children.
 With a dict, the operation is O(1). For a small tree, the list approach is acceptable, but it does not scale well for larger trees. Dicts also make the intent explicit: each entry maps a child name to the corresponding child node.
 
-**Why `set` for `productIds` instead of a list?**
+**Why `set` for `product_ids` instead of a list?**
 
 First, when product IDs from multiple nodes (parent and all descendants) are combined via `set.update()`, the operation merges them without creating duplicates. If lists were used, every merge would require explicit duplicate checking.
 
@@ -185,7 +185,7 @@ In `ranking.py`, `search_in_category` operates as follows:
 
 ```python
 def search_in_category(self, query, category, top_k=10):
-    filtered_product_ids = self._categoryTree.collect_product_ids(category)
+    filtered_product_ids = self._category_tree.collect_product_ids(category)
     return self.search(query, top_k, filtered_product_ids)
 ```
 
