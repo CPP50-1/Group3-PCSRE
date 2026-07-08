@@ -1,13 +1,7 @@
 from engine.ranking import CatalogSearchRankingEngine
-from engine.suggest import SuggestionEngine
 
-csre: CatalogSearchRankingEngine = CatalogSearchRankingEngine()
+engine = CatalogSearchRankingEngine()
+index = engine._invertedIndex  # noqa: E113
+products = engine._catalog
 
-for p in csre.search("hdmi", 5):
-    print(p)
-
-for p in csre.search_in_category("keyboard", "Electronics", 7):
-    print(p)
-
-suggestEngine = SuggestionEngine(csre._invertedIndex)
-print(suggestEngine.suggest("mase"))
+print(index.get_index())
