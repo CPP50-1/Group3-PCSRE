@@ -91,7 +91,7 @@ A catalog of n = 3 products is indexed, then queried for `"keyboard"`.
 ```python
 products = [
     Product(id="P1", name="Wireless Keyboard", tags={"bluetooth", "keyboard"}, ...),
-    Product(id="P2", name="USB Mouse",          tags={"wired"},                ...),
+    Product(id="P2", name="USB Mouse",          tags={"wired"},git ...),
     Product(id="P3", name="Keyboard Cover",     tags={"silicone"},             ...),
 ]
 ```
