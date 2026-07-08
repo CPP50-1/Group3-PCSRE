@@ -42,6 +42,10 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
         trimmed_a, trimmed_b = trimmed_b, trimmed_a
         lenA, lenB = lenB, lenA
 
+    # If length difference alone exceeds maxEdit
+    if maxEdit > 0 and lenA - lenB > maxEdit:
+        return lenA - lenB
+
     # Only two rows needed instead of a full (lenA+1) x (lenB+1) matrix
     prev: list[int] = list(range(lenB + 1))
     curr: list[int] = [0] * (lenB + 1)
