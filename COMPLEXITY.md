@@ -63,7 +63,7 @@ All in all (combining all the stages) we can observe a complexity of  O(q + m + 
   * n = number of unique candidate products (len(data_values))
   * k = top_k
 
-This is because usually k is usually much smaller than k
+This is because usually k is usually much smaller than n
 
 #### Time: Worst-case complexity
 In the worst case, every query token matches every product.
@@ -83,6 +83,50 @@ Counter for candidate products: O(n)
 Heap of top results: O(k)
 
 Overall: O(q+n+k) or simply O(n) since k and q are generally much smaller than the number of candidate products.
+
+### 3. Concrete Scenario Analysis
+
+Consider an online electronics store with a catalog of 10,000 products. Each product has a name, tags, category, stock level, and sales rank. When the application starts, the CatalogSearchRankingEngine builds an inverted index and a category tree from the catalog. Although this initialization takes time, it is performed only once, allowing subsequent searches to be much faster.
+
+Suppose a customer searches for "wireless gaming mouse" within the "Electronics/Computer Accessories" category. The query is first tokenized into the unique words:
+
+{"wireless", "gaming", "mouse"}
+
+For each token, the inverted index immediately retrieves the IDs of products containing that word, rather than scanning all 10,000 products. Assume the index returns:
+
+"wireless" → 450 products
+"gaming" → 300 products
+"mouse" → 220 products
+
+Some products appear in multiple lists, so after counting matches there are only 550 unique candidate products. The Counter records how many query terms each product matched.
+
+If a category filter is applied, only products belonging to Electronics/Computer Accessories are considered. This further reduces the candidate set before ranking.
+
+Each candidate product is then assigned a score based on:
+
+  * the proportion of query terms matched,
+  * whether the product is in stock,
+  * its sales rank.
+
+Instead of sorting all 550 candidates, the algorithm maintains a min-heap containing only the top 10 products requested by the user. As each product is scored, it is inserted into the heap only if it belongs among the current top results. This avoids the cost of sorting hundreds of products when only a few need to be displayed.
+
+Finally, the heap is sorted to produce the final ranked list presented to the customer.
+
+Performance Analysis
+
+In this example:
+
+  * Total products in catalog: 10,000
+  * Candidate products after index lookup: 550
+  * Results requested (top_k): 10
+
+Without an inverted index, the system would need to inspect all 10,000 products for every search. With the current implementation, only the 550 relevant candidates are processed, reducing the amount of work by almost 95%.
+
+Because the heap never stores more than 10 products, maintaining the top results is also very efficient, requiring only O(log 10) operations per candidate, which is effectively constant in practice.
+
+#### Conclusion
+
+This implementation is well suited for large product catalogs because it minimizes unnecessary work. The inverted index quickly identifies relevant products, the category tree efficiently filters products by category, the Counter calculates relevance scores based on query matches, and the heap ensures that only the highest-ranked products are retained. Together, these data structures allow the search engine to return accurate results quickly, even when the catalog contains thousands of products.
 
 ## Part 3: Category Tree Filter
 
