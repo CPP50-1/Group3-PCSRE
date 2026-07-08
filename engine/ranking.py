@@ -9,7 +9,7 @@ from engine.tokenize import tokenize
 from engine.types import Product
 
 
-def getScore(matched_tokens, total_query_tokens, product: Product) -> float:
+def get_score(matched_tokens: int, total_query_tokens: int, product: Product) -> float:
     """
     Helper function to calculate score for each candidate
     """
@@ -28,11 +28,11 @@ class CatalogSearchRankingEngine:
     def __init__(self):
         self._catalog: ProductCatalog = JSONProductCatalog("catalog.json")
 
-        self._invertedIndex = InvertedIndex()
-        self._invertedIndex.build(self._catalog.getValues())
+        self._inverted_index = InvertedIndex()
+        self._inverted_index.build(self._catalog.getValues())
 
-        self._categoryTree = CategoryTree()
-        self._categoryTree.build(self._catalog.getValues())
+        self._category_tree = CategoryTree()
+        self._category_tree.build(self._catalog.getValues())
 
     def search_in_category(
         self,
@@ -41,17 +41,21 @@ class CatalogSearchRankingEngine:
         top_k: int = 10,
     ) -> list[Product]:
         """ """
-        categoryFilteredProductIds = self._categoryTree.collect_product_ids(category)
+        category_filtered_product_ids = self._category_tree.collect_product_ids(
+            category
+        )
 
-        return self.search(query, top_k, categoryFilteredProductIds)
+        return self.search(query, top_k, category_filtered_product_ids)
 
-    def search(self, query: str, top_k: int = 10, filtered_ids: set[str] | None = None):
-        queryTokens = set(tokenize(query))
-        queryTokenLen = len(queryTokens)
+    def search(
+        self, query: str, top_k: int = 10, filtered_ids: set[str] | None = None
+    ) -> list[Product]:
+        query_tokens = set(tokenize(query))
+        query_token_len = len(query_tokens)
 
         # Dictionary containing product_id and the hits per token
         data_values: Counter = Counter()
-        for val in [self._invertedIndex.get_index().get(key) for key in queryTokens]:
+        for val in [self._inverted_index.get_index().get(key) for key in query_tokens]:
             asSet = set(val)
 
             if filtered_ids is not None:
@@ -61,19 +65,17 @@ class CatalogSearchRankingEngine:
 
         selected_products = []  # Use of a min_heap to store the top_k items.
 
-        heapq.heapify(selected_products)
-
-        for productId in data_values:
-            score = getScore(
-                data_values[productId],
-                queryTokenLen,
-                self._catalog[productId],
+        for product_id in data_values:
+            score = get_score(
+                data_values[product_id],
+                query_token_len,
+                self._catalog[product_id],
             )
 
             if len(selected_products) < top_k:
-                heapq.heappush(selected_products, [score, productId])
+                heapq.heappush(selected_products, [score, product_id])
             elif score > selected_products[0][0]:
-                heapq.heapreplace(selected_products, [score, productId])
+                heapq.heapreplace(selected_products, [score, product_id])
 
         selected_products.sort(reverse=True)
 
