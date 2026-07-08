@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import heapq
 from typing import Protocol
 
 
@@ -103,8 +104,12 @@ class SuggestionEngine:
         if maxSuggestions <= 0 or input_len <= 0:
             return []
 
+        input_lower = input.lower()
+
         vocabulary = self._vocabularyProvider.getVocabulary()
-        suggestion: list[tuple[int, str]] = []
+
+        heap: list[tuple[int, str]] = []
+        heapq.heapify(heap)
 
         for word in vocabulary:
             # Because we discard every suggestion if the distance is higher than what we set, we can skip words that
@@ -114,27 +119,34 @@ class SuggestionEngine:
             if abs(word_len - input_len) > self._discardDistance:
                 continue
 
+            word_lower = word.lower()
+
             # If word and input are the same length, we can use Hamming Distance which is lighter than levenshtein.
             # We don't need deletion and insertion if the strings are the same size
             dist: int = (
-                _hammingDistance(input.lower(), word.lower(), self._discardDistance)
+                _hammingDistance(
+                    input_lower,
+                    word_lower,
+                    self._discardDistance,
+                )
                 if word_len == input_len
                 else _levenshteinEditDistance(
-                    input.lower(), word.lower(), self._discardDistance
+                    input_lower,
+                    word_lower,
+                    self._discardDistance,
                 )
             )
 
-            if dist <= self._discardDistance:
-                suggestion.append((dist, word))
+            if dist > self._discardDistance:
+                continue
 
-        suggestion.sort(key=lambda x: (x[0], x[1]))
+            # heapq is a min-heap, so we store (-dist, word) to simulate a max-heap.
+            # This way heap[0] is the worst candidate (largest dist), letting us
+            # efficiently evict it via heapreplace when a better word is found.
+            if len(heap) == maxSuggestions:
+                if -heap[0][0] > dist:
+                    heapq.heapreplace(heap, (-dist, word))
+            else:
+                heapq.heappush(heap, (-dist, word))
 
-        result: list[str] = []
-
-        for _, word in suggestion:
-            result.append(word)
-
-            if len(result) == maxSuggestions:
-                break
-
-        return result
+        return [word for _, word in sorted(heap, key=lambda x: -x[0])]
