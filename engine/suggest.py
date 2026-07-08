@@ -17,12 +17,29 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
     """
     Compute de distance between the given 2 strings using Levenshtein Edit Distance. Case insensitive
     """
-    lenA, lenB = len(a), len(b)
+    trimmed_a, trimmed_b = a, b
+    lenA, lenB = len(trimmed_a), len(trimmed_b)
     useMaxEdit: bool = maxEdit > 0
+
+    # Trim common prefix
+    start: int = 0
+    while start < lenA and start < lenB and trimmed_a[start] == trimmed_b[start]:
+        start += 1
+
+    # Trim common suffix
+    endA, endB = lenA - 1, lenB - 1
+    while endA >= 0 and endB >= 0 and trimmed_a[endA] == trimmed_b[endB]:
+        endA -= 1
+        endB -= 1
+
+    trimmed_a = trimmed_a[start : endA + 1]
+    trimmed_b = trimmed_b[start : endB + 1]
+
+    lenA, lenB = len(trimmed_a), len(trimmed_b)
 
     # making row size as short as possible
     if lenB > lenA:
-        a, b = b, a
+        trimmed_a, trimmed_b = trimmed_b, trimmed_a
         lenA, lenB = lenB, lenA
 
     # Only two rows needed instead of a full (lenA+1) x (lenB+1) matrix
