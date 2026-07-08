@@ -95,10 +95,14 @@ class CategoryTree:
             current_node: CategoryNode = self._root
 
             for category in categories:
+                # skip empty category if any
+                if not category.strip():
+                    continue
+
                 node: CategoryNode = current_node.children.get(category)
                 if node is None:
                     node = CategoryNode(category)
-                    current_node.children[category] = node
+                    current_node.add_child(node)
                 current_node = node
 
             current_node.add_product_id(product.id)
@@ -126,16 +130,16 @@ class CategoryTree:
         if node is None:
             return set()
 
-        prodcuts_ids: set[str] = set()
+        products_ids: set[str] = set()
 
         node_stack: list[CategoryNode] = [node]
 
         while node_stack:
             current_node = node_stack.pop()
 
-            prodcuts_ids.update(current_node.product_ids)
+            products_ids.update(current_node.product_ids)
 
             for child_node in current_node.children.values():
                 node_stack.append(child_node)
 
-        return prodcuts_ids
+        return products_ids
