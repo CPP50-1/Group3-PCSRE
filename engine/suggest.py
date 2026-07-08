@@ -52,7 +52,7 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
         minEditInRow = lenB
 
         for j in range(1, lenB + 1):
-            cost: int = 0 if a[i - 1] == b[j - 1] else 1
+            cost: int = 0 if trimmed_a[i - 1] == trimmed_b[j - 1] else 1
 
             curr[j] = min(
                 prev[j] + 1,  # deletion
@@ -82,7 +82,7 @@ def _hammingDistance(a: str, b: str, maxEdit: int = 0) -> int:
     useMaxEdit: bool = maxEdit > 0
 
     if lenA != lenB:
-        raise ValueError(f"{a} and {b} does not have the same lenght")
+        raise ValueError(f"{a} and {b} does not have the same length")
 
     distance: int = 0
 
@@ -103,10 +103,10 @@ class SuggestionEngine:
     def __init__(
         self,
         vocabularyProvider: VocabularyProvider,
-        discardDistance=2,
+        maxEditDistance=2,
     ) -> None:
         self._vocabularyProvider = vocabularyProvider
-        self._discardDistance = discardDistance
+        self._maxEditDistance = maxEditDistance
 
     def suggest(
         self,
@@ -126,14 +126,13 @@ class SuggestionEngine:
         vocabulary = self._vocabularyProvider.getVocabulary()
 
         heap: list[tuple[int, str]] = []
-        heapq.heapify(heap)
 
         for word in vocabulary:
             # Because we discard every suggestion if the distance is higher than what we set, we can skip words that
             # would lead to an higher difference in length compared to the input. Levenshtein Edit Distance is costly
             # in process so we have an opportunity to save computation time here.
             word_len = len(word)
-            if abs(word_len - input_len) > self._discardDistance:
+            if abs(word_len - input_len) > self._maxEditDistance:
                 continue
 
             word_lower = word.lower()
@@ -144,17 +143,17 @@ class SuggestionEngine:
                 _hammingDistance(
                     input_lower,
                     word_lower,
-                    self._discardDistance,
+                    self._maxEditDistance,
                 )
                 if word_len == input_len
                 else _levenshteinEditDistance(
                     input_lower,
                     word_lower,
-                    self._discardDistance,
+                    self._maxEditDistance,
                 )
             )
 
-            if dist > self._discardDistance:
+            if dist > self._maxEditDistance:
                 continue
 
             # heapq is a min-heap, so we store (-dist, word) to simulate a max-heap.
@@ -166,4 +165,4 @@ class SuggestionEngine:
             else:
                 heapq.heappush(heap, (-dist, word))
 
-        return [word for _, word in sorted(heap, key=lambda x: -x[0])]
+        return [word for _, word in sorted(heap, key=lambda x: (-x[0], x[1]))]
