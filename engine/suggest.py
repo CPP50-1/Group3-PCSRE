@@ -20,36 +20,43 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
     useMaxEdit: bool = maxEdit > 0
     distanceMatrix: list[list[int]] = [[0] * (lenB + 1) for _ in range(lenA + 1)]
 
+    # making row size as short as possible
+    if lenB > lenA:
+        a, b = b, a
+        lenA, lenB = lenB, lenA
+
     a = a.lower()
     b = b.lower()
 
-    # Fill matric with base cases
-    for index in range(1, lenA + 1):
-        distanceMatrix[index][0] = index
-
-    for index in range(1, lenB + 1):
-        distanceMatrix[0][index] = index
+    # Only two rows needed instead of a full (lenA+1) x (lenB+1) matrix
+    prev: list[int] = list(range(lenB + 1))
+    curr: list[int] = [0] * (lenB + 1)
 
     # Compute matrix
     for i in range(1, lenA + 1):
+        curr[0] = i
+        minEditionInRow = lenB
+
         for j in range(1, lenB + 1):
             cost: int = 0 if a[i - 1] == b[j - 1] else 1
 
-            distanceMatrix[i][j] = min(
-                distanceMatrix[i - 1][j] + 1,  # deletion
-                distanceMatrix[i][j - 1] + 1,  # insertion
-                distanceMatrix[i - 1][j - 1] + cost,  # substitution
+            curr[j] = min(
+                prev[j] + 1,  # deletion
+                curr[j - 1] + 1,  # insertion
+                prev[j - 1] + cost,  # substitution
             )
+
+            if minEditionInRow > curr[j]:
+                minEditionInRow = curr[j]
 
         # if the min of the row is already higher, we can stop here. the number will not go down anywhere
         # later
-        if useMaxEdit:
-            minEditionInRow = min(distanceMatrix[i])
+        if useMaxEdit and minEditionInRow > maxEdit:
+            return minEditionInRow
 
-            if minEditionInRow > maxEdit:
-                return minEditionInRow
+        prev, curr = curr, prev
 
-    return distanceMatrix[lenA][lenB]
+    return prev[lenB]
 
 
 def _hammingDistance(a: str, b: str, maxEdit: int = 0) -> int:
