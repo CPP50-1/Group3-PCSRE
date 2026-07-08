@@ -53,9 +53,18 @@ def _levenshteinEditDistance(a: str, b: str, maxEdit: int = 0) -> int:
     # Compute matrix
     for i in range(1, lenA + 1):
         curr[0] = i
+
+        # only keep colums where |i - j| <= maxEdit can stay <= maxEdit
+        low = max(1, i - maxEdit) if useMaxEdit else 1
+        high = min(lenB, i + maxEdit) if useMaxEdit else lenB
+
+        # columns before the band inherit the diagonal cost
+        for j in range(1, low):
+            curr[j] = prev[j] + 1
+
         minEditInRow = lenB
 
-        for j in range(1, lenB + 1):
+        for j in range(low, high + 1):
             cost: int = 0 if trimmed_a[i - 1] == trimmed_b[j - 1] else 1
 
             curr[j] = min(
