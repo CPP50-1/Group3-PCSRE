@@ -13,6 +13,11 @@ def get_score(matched_tokens: int, total_query_tokens: int, product: Product) ->
     """
     Helper function to calculate score for each candidate
     """
+    if total_query_tokens == 0:
+        raise ZeroDivisionError(
+            f"provided total query tokens cannot be {total_query_tokens}",
+        )
+
     return (
         (matched_tokens / total_query_tokens) * 0.5
         + (product.stock > 0) * 0.2
