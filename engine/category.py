@@ -127,19 +127,12 @@ class CategoryTree:
 
         prodcuts_id: set[str] = set()
 
-        visited: set[CategoryNode] = set()
-
         node_stack: list[CategoryNode] = [node]
 
         while node_stack:
             current_node = node_stack.pop()
 
-            if current_node in visited:
-                continue
-
             prodcuts_id.update(current_node.productIds)
-
-            visited.add(current_node)
 
             for child_node in current_node.children.values():
                 node_stack.append(child_node)
