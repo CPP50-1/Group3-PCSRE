@@ -10,9 +10,7 @@ private `self.__data`, exposed only via `get_index()` and `getVocabulary()`.
 
 Resolving a query token to its candidates needs a direct jump, not a scan.
 `self.__data.get(word)` is a single hash-table lookup, independent of
-catalog size. The naive alternative — re-tokenizing every product's `name`
-and `tags` on every query — costs O(n · t · L) per query and repeats that
-cost on every search. The dict pays that cost once, in `build()`.
+catalog size.
 
 **Why `set` for product IDs instead of a list?**
 
@@ -61,7 +59,7 @@ sets wins on both fronts at negligible memory cost.
 - **L** = average length (in characters) of each text field
 
 For each product, `build()` iterates over `[product.name] + list(product.tags)`
-— t fields — and calls `tokenize()` on each. `tokenize()` itself runs a
+**t** fields and calls `tokenize()` on each. `tokenize()` itself runs a
 single regex scan over the text (`_TOKEN_PATTERN.findall`), which is O(L).
 The resulting tokens are then lowercased and length-filtered in two linear
 passes, also O(L) combined. For each surviving token, `self.__data.setdefault(word, set())`
