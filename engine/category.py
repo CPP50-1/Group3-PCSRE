@@ -17,7 +17,7 @@ class CategoryNode:
         children: dict[str, CategoryNode] | None = None,
         product_ids: set[str] | None = None,
     ) -> None:
-        self.name = name
+        self.__name = name
 
         if children is not None:
             self.children = children
@@ -40,10 +40,6 @@ class CategoryNode:
     @property
     def name(self) -> str:
         return self.__name
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self.__name = name
 
     @property
     def children(self) -> dict[str, CategoryNode]:
