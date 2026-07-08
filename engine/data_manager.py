@@ -42,7 +42,7 @@ class ProductCatalog(ABC):
         """Helper method to allow subclasses or users to clear the repo"""
         self.__products.clear()
 
-    def getValues(self) -> list[Product]:
+    def get_values(self) -> list[Product]:
         return self.__products.values()
 
 
@@ -51,10 +51,10 @@ class JSONProductCatalog(ProductCatalog):
     Concrete repo managing product data loaded from a json file
     """
 
-    def __init__(self, pathTofile: str) -> None:
+    def __init__(self, path_to_file: str) -> None:
         super().__init__()
 
-        with open(pathTofile, encoding="utf-8") as fichier:
+        with open(path_to_file, encoding="utf-8") as fichier:
             products = json.load(fichier)
 
         for product in products:

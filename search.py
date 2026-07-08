@@ -28,7 +28,7 @@ def main():
     index = engine._inverted_index
     products = engine._catalog
 
-    suggestion_engine = SuggestionEngine(vocabularyProvider=index)
+    suggestion_engine = SuggestionEngine(vocabulary_provider=index)
     print(f"{len(products)} products indexed. \n")
 
     print(f'Results for: "{args.query}"')

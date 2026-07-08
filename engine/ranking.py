@@ -34,10 +34,10 @@ class CatalogSearchRankingEngine:
         self._catalog: ProductCatalog = JSONProductCatalog("catalog.json")
 
         self._inverted_index = InvertedIndex()
-        self._inverted_index.build(self._catalog.getValues())
+        self._inverted_index.build(self._catalog.get_values())
 
         self._category_tree = CategoryTree()
-        self._category_tree.build(self._catalog.getValues())
+        self._category_tree.build(self._catalog.get_values())
 
     def search_in_category(
         self,
